@@ -1,12 +1,24 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const path = require('path');
+const cors = require('cors');
 
 const app = express();
 
-mongoose.connect('mongodb+srv://semana:semana@mongodb-robs-womj6.mongodb.net/test?retryWrites=true&w=majority',
-    { useNewUrlParser: true, }
-);
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 
-app.listen(3333, () => {
+mongoose.connect('mongodb://localhost/instarocket', { useNewUrlParser: true });
+
+app.use((req, res, next) => {
+    req.io = io;
+    next();
+});
+
+app.use(cors());
+app.use('/files', express.static(path.resolve(__dirname, '..', 'uploads', 'resized')));
+app.use(require('./routes'));
+
+server.listen(3333, () => {
     console.log('Servidor iniciado na porta 3333.');
 });
